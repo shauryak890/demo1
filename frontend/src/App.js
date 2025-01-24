@@ -38,6 +38,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/register/distributor" element={<Register />} />
         <Route
           path="/agentdashboard"
           element={user?.role === 'agent' ? <AgentDashboard user={user} /> : <Navigate to="/login" />}

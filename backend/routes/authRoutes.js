@@ -46,6 +46,11 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
+    // Validate role
+    if (role !== 'user' && role !== 'agent') {
+      return res.status(400).json({ error: 'Invalid role.' });
+    }
+
     // Check if the user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {

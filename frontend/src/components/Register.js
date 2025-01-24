@@ -1,14 +1,24 @@
 // Register.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 function Register() {
+  const location = useLocation();
+  const isDistributor = location.pathname === '/register/distributor';
+
+  console.log('Current Path:', location.pathname); // Debug: Log the current path
+  console.log('Is Distributor:', isDistributor); // Debug: Log the value of isDistributor
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'user', // Default role
+    role: isDistributor ? 'agent' : 'user', // Default role based on the registration type
   });
+
+  console.log('Form Data:', formData); // Debug: Log the form data
+
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
@@ -26,9 +36,23 @@ function Register() {
   };
 
   return (
-    <div>
-      <h1>Register</h1>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>Register {isDistributor ? 'as Distributor' : ''}</h1>
+
+      {isDistributor && (
+        <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '5px', marginBottom: '20px' }}>
+          <h2>Why Join as a Distributor?</h2>
+          <ul>
+            <li>Work from home and earn money.</li>
+            <li>Flexible working hours.</li>
+            <li>Access to exclusive training and resources.</li>
+            <li>Be part of a growing community.</li>
+          </ul>
+        </div>
+      )}
+
+      {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
+
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -36,6 +60,7 @@ function Register() {
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
+          style={{ display: 'block', marginBottom: '10px', padding: '10px', width: '300px' }}
         />
         <input
           type="email"
@@ -43,6 +68,7 @@ function Register() {
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
+          style={{ display: 'block', marginBottom: '10px', padding: '10px', width: '300px' }}
         />
         <input
           type="password"
@@ -50,16 +76,30 @@ function Register() {
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           required
+          style={{ display: 'block', marginBottom: '10px', padding: '10px', width: '300px' }}
         />
-        <select
-          value={formData.role}
-          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+        {!isDistributor && (
+          <select
+            value={formData.role}
+            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            style={{ display: 'block', marginBottom: '10px', padding: '10px', width: '320px' }}
+          >
+            <option value="user">User</option>
+          </select>
+        )}
+        {isDistributor && (
+          <input
+            type="hidden"
+            name="role"
+            value="agent" // Force the role to be "agent" for distributor registration
+          />
+        )}
+        <button
+          type="submit"
+          style={{ padding: '10px 20px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
         >
-          <option value="user">User</option>
-          <option value="agent">Agent</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button type="submit">Register</button>
+          Register
+        </button>
       </form>
     </div>
   );
