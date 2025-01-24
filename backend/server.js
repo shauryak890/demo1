@@ -1,88 +1,81 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 require('dotenv').config();
+
+const authRoutes = require('./routes/authRoutes');
+const Agent = require('./models/Agent'); // Import the Agent model
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// In-memory data storage (replace with a database in production)
-const users = [
-  {
-    id: 1,
-    name: 'Admin',
-    email: 'admin@example.com',
-    password: '$2a$10$exampleHashedPassword', // Hashed password for "admin123"
-    role: 'admin',
-  },
-];
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Failed to connect to MongoDB:', err));
 
-const agents = [
-  {
-    agentId: 'A001',
-    name: 'John Doe',
-    leadsGenerated: 15,
-    monthlyPayout: 7500,
-    clients: [
-      { name: 'Client 1', email: 'client1@example.com', phone: '1234567890' },
-    ],
-  },
-];
+// Use auth routes
+app.use('/auth', authRoutes);
 
-// Login route
-app.post('/auth/login', async (req, res) => {
-  const { email, password } = req.body;
+// Route to fetch agent dashboard data
+app.get('/agent/:agentId/dashboard', async (req, res) => {
+  const { agentId } = req.params;
 
-  const user = users.find((u) => u.email === email);
+  try {
+    // Find the agent by ID
+    const agent = await Agent.findById(agentId);
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found.' });
+    }
 
-  if (!user) {
-    return res.status(400).json({ error: 'Invalid email or password.' });
+    res.json(agent);
+  } catch (err) {
+    res.status(500).json({ error: 'An error occurred while fetching agent data.' });
   }
-
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-
-  if (!isPasswordValid) {
-    return res.status(400).json({ error: 'Invalid email or password.' });
-  }
-
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
-  });
-
-  res.json({ token, role: user.role });
 });
 
-// Signup route
-app.post('/auth/signup', async (req, res) => {
-  const { name, email, password, role } = req.body;
+// Route to submit a new lead
+app.post('/agent/:agentId/submit-lead', async (req, res) => {
+  const { agentId } = req.params;
+  const { name, email, phone } = req.body;
 
-  const userExists = users.find((u) => u.email === email);
+  try {
+    // Find the agent by ID
+    const agent = await Agent.findById(agentId);
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found.' });
+    }
 
-  if (userExists) {
-    return res.status(400).json({ error: 'User already exists.' });
+    // Add the new lead to the agent's clients
+    agent.clients.push({ name, email, phone });
+    agent.leadsGenerated += 1;
+    agent.monthlyPayout += 500; // Example: Increase payout by ₹500 per lead
+
+    // Save the updated agent
+    await agent.save();
+
+    res.json({ message: 'Lead submitted successfully.', agent });
+  } catch (err) {
+    res.status(500).json({ error: 'An error occurred while submitting the lead.' });
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = {
-    id: users.length + 1,
-    name,
-    email,
-    password: hashedPassword,
-    role: role || 'agent',
-  };
-
-  users.push(newUser);
-
-  res.json({ message: 'User registered successfully.' });
 });
 
-// Route to fetch all agents (for admin panel)
-app.get('/admin/agents', (req, res) => {
-  res.json(agents);
+// Route to fetch all agents' data for the admin panel
+app.get('/admin/agents', async (req, res) => {
+  try {
+    // Fetch all agents from the database
+    const agents = await Agent.find();
+    res.json(agents);
+  } catch (err) {
+    console.error('Error fetching agents:', err);
+    res.status(500).json({ error: 'An error occurred while fetching agents data.' });
+  }
 });
 
 // Start the server

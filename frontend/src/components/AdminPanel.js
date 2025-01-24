@@ -1,9 +1,11 @@
+// AdminPanel.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function AdminPanel() {
   const [agents, setAgents] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   // Fetch all agents' data
   useEffect(() => {
@@ -14,15 +16,24 @@ function AdminPanel() {
       } catch (err) {
         setError('Failed to fetch agents data.');
         console.error('Error:', err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAgents();
   }, []);
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div style={{ color: 'red', padding: '20px' }}>{error}</div>;
+  }
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Admin Panel</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <h2>Agents Overview</h2>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -37,8 +48,8 @@ function AdminPanel() {
         </thead>
         <tbody>
           {agents.map((agent) => (
-            <tr key={agent.agentId}>
-              <td style={{ padding: '10px', border: '1px solid #ddd' }}>{agent.agentId}</td>
+            <tr key={agent._id}>
+              <td style={{ padding: '10px', border: '1px solid #ddd' }}>{agent._id}</td>
               <td style={{ padding: '10px', border: '1px solid #ddd' }}>{agent.name}</td>
               <td style={{ padding: '10px', border: '1px solid #ddd' }}>{agent.leadsGenerated}</td>
               <td style={{ padding: '10px', border: '1px solid #ddd' }}>{agent.monthlyPayout.toFixed(2)}</td>

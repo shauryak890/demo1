@@ -17,7 +17,7 @@ function Login({ setUser }) {
       });
 
       localStorage.setItem('token', response.data.token);
-      setUser({ role: response.data.role });
+      setUser({ id: response.data.id, role: response.data.role, agentId: response.data.agentId });
       navigate(response.data.role === 'admin' ? '/admin' : '/agentdashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'An error occurred.');

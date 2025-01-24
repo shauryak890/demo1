@@ -6,28 +6,41 @@ import Register from './components/Register';
 import AgentDashboard from './components/AgentDashboard';
 import AdminPanel from './components/AdminPanel';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer'; // Corrected import
-import { isAuthenticated, getRole } from './utils/auth';
+import Footer from './components/Footer';
 
 function App() {
   const [user, setUser] = useState(null);
 
+  // Check if the user is logged in on initial load
   useEffect(() => {
-    if (isAuthenticated()) {
-      setUser({ role: getRole() });
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        setUser({ id: decodedToken.id, role: decodedToken.role, agentId: decodedToken.agentId });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        localStorage.removeItem('token'); // Clear invalid token
+      }
     }
   }, []);
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
+
   return (
     <Router>
-      <Navbar />
+      <Navbar user={user} handleLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register />} />
         <Route
           path="/agentdashboard"
-          element={user?.role === 'agent' ? <AgentDashboard /> : <Navigate to="/login" />}
+          element={user?.role === 'agent' ? <AgentDashboard user={user} /> : <Navigate to="/login" />}
         />
         <Route
           path="/admin"
