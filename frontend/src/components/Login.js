@@ -25,38 +25,39 @@ function Login({ setUser }) {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Login</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ padding: '10px', marginRight: '10px', width: '300px' }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: '10px', marginRight: '10px', width: '300px' }}
-        />
-        <button
-          type="submit"
-          style={{
-            padding: '10px 20px',
-            borderRadius: '5px',
-            border: 'none',
-            backgroundColor: '#007BFF',
-            color: 'white',
-            cursor: 'pointer',
-          }}
-        >
-          Login
-        </button>
-      </form>
+    <div className="container">
+      <div className="formWrapper">
+        <h2 className="title">Login</h2>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <form className="form" onSubmit={handleLogin}>
+          <div className="inputGroup">
+            <label className="label" htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              className="input"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="inputGroup">
+            <label className="label" htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              className="input"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="button">Login</button>
+        </form>
+        <p className="linkText">
+          Don't have an account? <a href="/register" className="link">Register</a>
+        </p>
+      </div>
     </div>
   );
 }

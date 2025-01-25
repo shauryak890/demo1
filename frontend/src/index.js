@@ -1,14 +1,17 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css'; // Optional: If you have global styles
+import { createRoot } from 'react-dom/client'; // Import createRoot
+import App from './App'; // Import the main App component
+import './index.css'; // Import global styles
 
-// Create a root element for React 18
-const root = ReactDOM.createRoot(document.getElementById('root'));
+// Get the root container
+const container = document.getElementById('root');
 
-// Render the application
+// Create a root
+const root = createRoot(container);
+
+// Render the app
 root.render(
   <React.StrictMode>
-    <App /> {/* No <Router> here */}
+    <App />
   </React.StrictMode>
 );
