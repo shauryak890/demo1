@@ -37,7 +37,7 @@ router.post('/approve-client', auth, isAdmin, async (req, res) => {
     }
 
     client.approved = true;
-    agent.monthlyPayout += 500; // Add commission for approved lead
+    agent.monthlyPayout += 5000; // Update commission amount to ₹5000 per approved lead
     await agent.save();
 
     res.json({ message: 'Client approved successfully' });

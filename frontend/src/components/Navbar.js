@@ -11,7 +11,8 @@ import {
   Moon,
   Sun,
   LayoutDashboard,
-  PiggyBank
+  PiggyBank,
+  Settings
 } from 'lucide-react';
 
 function Navbar({ user, handleLogout, toggleTheme }) {
@@ -51,6 +52,13 @@ function Navbar({ user, handleLogout, toggleTheme }) {
             </Link>
           )}
 
+          {user?.role === 'admin' && (
+            <Link to="/admin" className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}>
+              <Settings size={18} />
+              <span>Admin Panel</span>
+            </Link>
+          )}
+
           <Link to="/about-us" className={`nav-link ${location.pathname === '/about-us' ? 'active' : ''}`}>
             <Info size={18} />
             <span>About Us</span>
@@ -68,10 +76,15 @@ function Navbar({ user, handleLogout, toggleTheme }) {
           </button>
 
           {user ? (
-            <button className="nav-button logout" onClick={handleLogout}>
-              <LogOut size={18} />
-              <span>Logout</span>
-            </button>
+            <div className="user-actions">
+              <span className="user-role">
+                {user.role === 'admin' ? 'Admin' : user.role === 'agent' ? 'Agent' : 'User'}
+              </span>
+              <button className="nav-button logout" onClick={handleLogout}>
+                <LogOut size={18} />
+                <span>Logout</span>
+              </button>
+            </div>
           ) : (
             <div className="auth-buttons">
               <Link to="/login" className="nav-button login">

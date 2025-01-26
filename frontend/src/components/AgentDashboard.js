@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, DollarSign, TrendingUp, Send, Phone, Mail, User, Briefcase, PiggyBank } from 'lucide-react';
+import { formatCurrency } from '../utils/formatCurrency';
 
 function AgentDashboard({ user }) {
   const [dashboardData, setDashboardData] = useState(null);
@@ -132,7 +133,7 @@ function AgentDashboard({ user }) {
               </div>
               <div className="stat-content">
                 <h3>Total Investments</h3>
-                <p>${dashboardData.totalInvestments || 0}</p>
+                <p>{formatCurrency(dashboardData.totalInvestments || 0)}</p>
               </div>
             </div>
             <div className="stat-card">
@@ -141,7 +142,7 @@ function AgentDashboard({ user }) {
               </div>
               <div className="stat-content">
                 <h3>Monthly Commission</h3>
-                <p>${dashboardData.monthlyCommission || 0}</p>
+                <p>{formatCurrency(dashboardData.monthlyCommission || 0)}</p>
               </div>
             </div>
           </div>

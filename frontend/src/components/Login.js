@@ -28,19 +28,7 @@ function Login({ setUser }) {
       toast.success('Login successful!');
       
       setTimeout(() => {
-        switch (response.data.role) {
-          case 'admin':
-            navigate('/admin');
-            break;
-          case 'agent':
-            navigate('/agentdashboard');
-            break;
-          case 'user':
-            navigate('/');
-            break;
-          default:
-            navigate('/');
-        }
+        navigate('/', { state: { from: '/login' } });
       }, 1000);
 
     } catch (err) {

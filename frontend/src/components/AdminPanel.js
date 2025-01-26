@@ -13,6 +13,7 @@ import {
   UserCheck,
   AlertCircle
 } from 'lucide-react';
+import { formatCurrency } from '../utils/formatCurrency';
 
 function AdminPanel() {
   const [agents, setAgents] = useState([]);
@@ -148,7 +149,7 @@ function AdminPanel() {
           </div>
           <div className="stat-content">
             <h3>Total Payouts</h3>
-            <p>${agents.reduce((sum, agent) => sum + agent.monthlyPayout, 0)}</p>
+            <p>{formatCurrency(agents.reduce((sum, agent) => sum + agent.monthlyPayout, 0))}</p>
           </div>
         </div>
       </div>
@@ -176,7 +177,7 @@ function AdminPanel() {
               </div>
               <div>
                 <span>Monthly Payout:</span>
-                <span>${agent.monthlyPayout}</span>
+                <span>{formatCurrency(agent.monthlyPayout)}</span>
               </div>
             </div>
 
@@ -187,7 +188,7 @@ function AdminPanel() {
                   <div className="client-info">
                     <h4>{client.name}</h4>
                     <p>{client.email}</p>
-                    <p>Investment: ${client.capital}</p>
+                    <p>Investment: {formatCurrency(client.capital || 0)}</p>
                     <p>Type: {client.investmentType}</p>
                   </div>
                   <div className="client-status">

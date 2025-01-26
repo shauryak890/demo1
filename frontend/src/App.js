@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
@@ -55,17 +55,27 @@ function App() {
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-      // Redirect to appropriate dashboard or home based on role
-      if (user.role === 'agent') {
-        return <Navigate to="/agentdashboard" />;
-      } else if (user.role === 'admin') {
-        return <Navigate to="/admin" />;
-      } else {
-        return <Navigate to="/" />;
-      }
+      return <Navigate to="/" />;
     }
 
     return element;
+  };
+
+  // Home Route component to handle conditional redirects
+  const HomeRoute = () => {
+    const location = useLocation();
+    
+    // Only redirect if coming from login (initial login redirect)
+    if (location.state?.from === '/login') {
+      if (user?.role === 'agent') {
+        return <Navigate to="/agentdashboard" />;
+      } else if (user?.role === 'admin') {
+        return <Navigate to="/admin" />;
+      }
+    }
+    
+    // Otherwise show home page
+    return <Home />;
   };
 
   return (
@@ -74,17 +84,16 @@ function App() {
       <Header user={user} handleLogout={handleLogout} />
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={
-          user?.role === 'agent' ? <Navigate to="/agentdashboard" /> :
-          user?.role === 'admin' ? <Navigate to="/admin" /> :
-          <Home />
-        } />
+        <Route path="/" element={<HomeRoute />} />
         <Route path="/login" element={
           user ? (
-            user.role === 'agent' ? <Navigate to="/agentdashboard" /> :
-            user.role === 'admin' ? <Navigate to="/admin" /> :
-            <Navigate to="/" />
-          ) : <Login setUser={setUser} />
+            <Navigate 
+              to="/" 
+              state={{ from: '/login' }} // Add state to track where we came from
+            />
+          ) : (
+            <Login setUser={setUser} />
+          )
         } />
         <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
 

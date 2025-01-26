@@ -133,18 +133,30 @@ header h1 {
   color: var(--muted-foreground);
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .nav-link:hover,
 .nav-link.active {
   color: var(--foreground);
   background-color: var(--muted);
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .nav-link svg {
   width: 18px;
   height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.nav-link:hover svg {
+  transform: scale(1.1);
 }
 
 .nav-actions {
@@ -1156,4 +1168,22 @@ footer {
 .approve-button:hover,
 .reject-button:hover {
   opacity: 0.9;
+}
+
+/* Add these styles to your existing navbar styles */
+
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-role {
+  padding: 0.25rem 0.75rem;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
 }
