@@ -46,7 +46,7 @@ function AgentDashboard({ user }) {
         `http://localhost:5000/agent/${user.agentId}/dashboard`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
           }
         }
       );
@@ -75,7 +75,9 @@ function AgentDashboard({ user }) {
         `http://localhost:5000/agent/${user.agentId}/submit-lead`,
         newLead,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            'Authorization': `Bearer ${token}`
+          }
         }
       );
 

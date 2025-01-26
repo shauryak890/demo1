@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Agent = require('../models/Agent'); // Import the Agent model
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const auth = require('../middleware/auth'); // Add this line to import auth middleware
 
 // Login route
 router.post('/login', async (req, res) => {
@@ -114,6 +115,49 @@ router.post('/signup', async (req, res) => {
   } catch (err) {
     console.error('Error during signup:', err);
     res.status(500).json({ error: 'An error occurred during signup.' });
+  }
+});
+
+// Become agent route
+router.post('/become-agent', auth, async (req, res) => {
+  try {
+    // Find user and update role
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === 'agent') {
+      return res.status(400).json({ message: 'User is already an agent' });
+    }
+
+    user.role = 'agent';
+    await user.save();
+
+    // Create new agent document
+    const newAgent = new Agent({
+      userId: user._id,
+      email: user.email,
+      name: user.name,
+      role: 'agent'
+    });
+    await newAgent.save();
+
+    // Generate new token with updated role
+    const token = jwt.sign(
+      { id: user._id, role: 'agent', email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      token,
+      message: 'Successfully became an agent'
+    });
+  } catch (error) {
+    console.error('Error becoming agent:', error);
+    res.status(500).json({ message: 'Error updating user role' });
   }
 });
 
