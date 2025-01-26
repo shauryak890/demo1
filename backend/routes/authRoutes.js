@@ -4,35 +4,61 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Agent = require('../models/Agent'); // Import the Agent model
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 
 // Login route
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    // Find the user by email
+    const { email, password } = req.body;
+
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
+      return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Compare passwords
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Generate a JWT token
+    // If user is an agent, get the agent details
+    let agentData = null;
+    if (user.role === 'agent') {
+      agentData = await Agent.findOne({ userId: user._id });
+      if (!agentData) {
+        return res.status(500).json({ error: 'Agent data not found' });
+      }
+    }
+
+    // Create token payload
+    const payload = {
+      id: user._id,
+      role: user.role,
+      email: user.email,
+      agentId: agentData?._id
+    };
+
+    // Sign token
     const token = jwt.sign(
-      { id: user._id, role: user.role, agentId: user.agentId }, // Include agentId in the token payload
+      payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
-    res.json({ token, role: user.role, agentId: user.agentId });
+    // Send response
+    res.json({
+      token,
+      id: user._id,
+      role: user.role,
+      email: user.email,
+      agentId: agentData?._id
+    });
+
   } catch (err) {
-    console.error('Error during login:', err); // Log the error
-    res.status(500).json({ error: 'An error occurred during login.', details: err.message });
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -57,30 +83,37 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'User already exists.' });
     }
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Create a new user
-    const newUser = new User({ name, email, password, role });
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role
+    });
+
+    // Save the user first to get the user ID
+    await newUser.save();
 
     // If the user is an agent, create an agent document
     if (role === 'agent') {
       const newAgent = new Agent({
-        userId: newUser._id, // Link the agent to the user
-        name,
-        leadsGenerated: 0, // Default values
-        monthlyPayout: 0,
-        clients: [],
+        userId: newUser._id,
+        email: email,
+        name: name,
+        role: 'agent'
       });
 
       await newAgent.save();
-      newUser.agentId = newAgent._id; // Link the user to the agent
     }
-
-    // Save the user after setting the agentId
-    await newUser.save();
 
     res.json({ message: 'User registered successfully.' });
   } catch (err) {
-    console.error('Error during signup:', err); // Log the full error
-    res.status(500).json({ error: 'An error occurred during signup.', details: err.message });
+    console.error('Error during signup:', err);
+    res.status(500).json({ error: 'An error occurred during signup.' });
   }
 });
 

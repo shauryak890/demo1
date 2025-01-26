@@ -1,31 +1,43 @@
 const mongoose = require('mongoose');
 
+const clientSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  investmentType: String,
+  capital: Number,
+  notes: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 const agentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
-    required: true,
+    ref: 'User',
+    required: true
   },
-  name: {
+  email: {
     type: String,
     required: true,
+    unique: true
   },
+  name: String,
+  role: {
+    type: String,
+    default: 'agent'
+  },
+  clients: [clientSchema],
   leadsGenerated: {
     type: Number,
-    default: 0,
+    default: 0
   },
   monthlyPayout: {
     type: Number,
-    default: 0,
-  },
-  clients: [
-    {
-      name: String,
-      email: String,
-      phone: String,
-    },
-  ],
+    default: 0
+  }
 });
 
-const Agent = mongoose.model('Agent', agentSchema);
-module.exports = Agent;
+module.exports = mongoose.model('Agent', agentSchema);

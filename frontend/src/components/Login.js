@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 function Login({ setUser }) {
   const [email, setEmail] = useState('');
@@ -17,10 +18,34 @@ function Login({ setUser }) {
       });
 
       localStorage.setItem('token', response.data.token);
-      setUser({ id: response.data.id, role: response.data.role, agentId: response.data.agentId });
-      navigate(response.data.role === 'admin' ? '/admin' : '/agentdashboard');
+      setUser({ 
+        id: response.data.id,
+        role: response.data.role,
+        email: response.data.email,
+        agentId: response.data.agentId
+      });
+      
+      toast.success('Login successful!');
+      
+      setTimeout(() => {
+        switch (response.data.role) {
+          case 'admin':
+            navigate('/admin');
+            break;
+          case 'agent':
+            navigate('/agentdashboard');
+            break;
+          case 'user':
+            navigate('/');
+            break;
+          default:
+            navigate('/');
+        }
+      }, 1000);
+
     } catch (err) {
       setError(err.response?.data?.error || 'An error occurred.');
+      toast.error(err.response?.data?.error || 'An error occurred.');
     }
   };
 

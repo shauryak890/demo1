@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 function Register() {
   const location = useLocation();
   const isDistributor = location.pathname === '/register/distributor';
+  const navigate = useNavigate();
 
   console.log('Current Path:', location.pathname); // Debug: Log the current path
   console.log('Is Distributor:', isDistributor); // Debug: Log the value of isDistributor
@@ -13,6 +15,7 @@ function Register() {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     role: isDistributor ? 'agent' : 'user', // Default role based on the registration type
   });
 
@@ -22,16 +25,35 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
 
     try {
       const response = await axios.post('http://localhost:5000/auth/signup', formData);
       console.log('Signup successful:', response.data);
       setError('');
-      // Redirect or show success message
+      toast.success('Registration successful! Please login.');
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 1000);
+
     } catch (err) {
       console.error('Signup error:', err.response?.data || err.message);
       setError(err.response?.data?.error || 'An error occurred during signup.');
+      toast.error(err.response?.data?.message || 'Registration failed');
     }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   return (
@@ -62,7 +84,8 @@ function Register() {
               className="input"
               placeholder="Enter your name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={handleChange}
+              name="name"
               required
             />
           </div>
@@ -74,7 +97,8 @@ function Register() {
               className="input"
               placeholder="Enter your email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={handleChange}
+              name="email"
               required
             />
           </div>
@@ -86,7 +110,21 @@ function Register() {
               className="input"
               placeholder="Enter your password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={handleChange}
+              name="password"
+              required
+            />
+          </div>
+          <div className="inputGroup">
+            <label className="label" htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              className="input"
+              placeholder="Enter your password again"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              name="confirmPassword"
               required
             />
           </div>
@@ -97,7 +135,8 @@ function Register() {
                 id="role"
                 className="input"
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                onChange={handleChange}
+                name="role"
               >
                 <option value="user">User</option>
               </select>
