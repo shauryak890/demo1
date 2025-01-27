@@ -167,13 +167,6 @@ const Home = ({ user }) => {
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-section">
-            <h3>Contact Us</h3>
-            <p>Email: support@budgetbrilliance.com</p>
-            <p>Phone: +91 1800-123-4567</p>
-            <p>Address: Financial District, Mumbai</p>
-          </div>
-
-          <div className="footer-section">
             <h3>Quick Links</h3>
             <ul>
               <li><Link to="/about">About Us</Link></li>

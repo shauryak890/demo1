@@ -20,6 +20,12 @@ import './index.css';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   // Check if the user is logged in on initial load
   useEffect(() => {
@@ -43,10 +49,7 @@ function App() {
 
   // Toggle theme function
   const toggleTheme = () => {
-    const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-    localStorage.setItem('theme', newTheme);
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
   // Protected Route component
@@ -81,63 +84,58 @@ function App() {
 
   return (
     <Router>
-      <Navbar user={user} handleLogout={handleLogout} toggleTheme={toggleTheme} />
-      <Header user={user} handleLogout={handleLogout} />
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<HomeRoute />} />
-        <Route path="/login" element={
-          user ? (
-            <Navigate 
-              to="/" 
-              state={{ from: '/login' }} // Add state to track where we came from
-            />
-          ) : (
-            <Login setUser={setUser} />
-          )
-        } />
-        <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+      <div className="app">
+        <ToastContainer position="top-right" />
+        <Navbar user={user} handleLogout={handleLogout} toggleTheme={toggleTheme} />
+        
+        <main className="main-content">
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<HomeRoute />} />
+            <Route path="/login" element={
+              user ? (
+                <Navigate 
+                  to="/" 
+                  state={{ from: '/login' }} // Add state to track where we came from
+                />
+              ) : (
+                <Login setUser={setUser} />
+              )
+            } />
+            <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+            <Route path="/register/distributor" element={user ? <Navigate to="/" /> : <Register />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/agentdashboard"
-          element={
-            <ProtectedRoute
-              element={<AgentDashboard user={user} />}
-              allowedRoles={['agent']}
+            {/* Protected routes */}
+            <Route
+              path="/agent-dashboard"
+              element={
+                user?.role === 'agent' ? (
+                  <AgentDashboard user={user} />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
             />
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute
-              element={<AdminPanel />}
-              allowedRoles={['admin']}
+            <Route
+              path="/admin"
+              element={
+                user?.role === 'admin' ? (
+                  <AdminPanel />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
             />
-          }
-        />
 
-        {/* Other routes */}
-        <Route path="/our-funds" element={<OurFunds />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-      </Routes>
-      <Footer />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+            {/* Other routes */}
+            <Route path="/our-funds" element={<OurFunds />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+          </Routes>
+        </main>
+      </div>
     </Router>
   );
 }
