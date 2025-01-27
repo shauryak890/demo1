@@ -131,10 +131,7 @@ router.post('/become-agent', auth, async (req, res) => {
       return res.status(400).json({ message: 'User is already an agent' });
     }
 
-    user.role = 'agent';
-    await user.save();
-
-    // Create new agent document
+    // Create new agent document first to get the agent ID
     const newAgent = new Agent({
       userId: user._id,
       email: user.email,
@@ -143,9 +140,18 @@ router.post('/become-agent', auth, async (req, res) => {
     });
     await newAgent.save();
 
-    // Generate new token with updated role
+    // Update user role after agent is created
+    user.role = 'agent';
+    await user.save();
+
+    // Generate new token with updated role and agent ID
     const token = jwt.sign(
-      { id: user._id, role: 'agent', email: user.email },
+      { 
+        id: user._id, 
+        role: 'agent', 
+        email: user.email,
+        agentId: newAgent._id // Include the agent ID in token
+      },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );

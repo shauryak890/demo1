@@ -1,59 +1,141 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Agent = require('../models/Agent');
 const auth = require('../middleware/auth');
 
+// Format currency helper function (since we can't import from frontend)
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(amount);
+};
+
 // Get agent dashboard data
 router.get('/:agentId/dashboard', auth, async (req, res) => {
-  const { agentId } = req.params;
-
   try {
-    // Find the agent by ID
+    const { agentId } = req.params;
     const agent = await Agent.findById(agentId);
+
     if (!agent) {
-      return res.status(404).json({ error: 'Agent not found.' });
+      return res.status(404).json({ message: 'Agent not found' });
     }
 
-    // Format dashboard data
-    const dashboardData = {
-      totalClients: agent.clients?.length || 0,
-      totalInvestments: agent.monthlyPayout || 0,
-      monthlyCommission: agent.monthlyPayout || 0,
-      recentActivities: agent.clients.map(client => ({
-        date: client.createdAt || new Date(),
-        description: `New client added: ${client.name}`
-      })).slice(-5) // Get last 5 activities
-    };
+    // Verify that the logged-in user is the agent
+    if (agent.userId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to view this dashboard' });
+    }
 
-    res.json(dashboardData);
-  } catch (err) {
-    res.status(500).json({ error: 'An error occurred while fetching agent data.' });
+    // Calculate dashboard statistics
+    const totalClients = agent.clients.length;
+    const totalInvestments = agent.clients.reduce((sum, client) => sum + (client.capital || 0), 0);
+    const monthlyCommission = agent.monthlyPayout || 0;
+
+    // Get recent activities
+    const recentActivities = agent.clients.map(client => ({
+      date: client.createdAt,
+      description: `New lead: ${client.name} - ${formatCurrency(client.capital || 0)}`
+    })).sort((a, b) => b.date - a.date).slice(0, 5);
+
+    res.json({
+      totalClients,
+      totalInvestments,
+      monthlyCommission,
+      recentActivities,
+      clients: agent.clients
+    });
+
+  } catch (error) {
+    console.error('Dashboard fetch error:', error);
+    res.status(500).json({ message: 'Error fetching dashboard data' });
   }
 });
 
-// Submit a new lead
-router.post('/:agentId/submit-lead', auth, async (req, res) => {
-  const { agentId } = req.params;
-  const { name, email, phone } = req.body;
-
+// Submit new lead
+router.post('/:agentId/leads', auth, async (req, res) => {
   try {
-    // Find the agent by ID
+    const { agentId } = req.params;
+    console.log('1. Received request with agentId:', agentId);
+    console.log('2. Request body:', req.body);
+
+    // Find the agent
     const agent = await Agent.findById(agentId);
+    console.log('3. Found agent:', agent ? 'Yes' : 'No');
+
     if (!agent) {
-      return res.status(404).json({ error: 'Agent not found.' });
+      return res.status(404).json({
+        success: false,
+        message: 'Agent not found'
+      });
     }
 
-    // Add the new lead to the agent's clients
-    agent.clients.push({ name, email, phone });
-    agent.leadsGenerated += 1;
-    agent.monthlyPayout += 500; // Example: Increase payout by ₹500 per lead
+    // Create simplified lead object
+    const newLead = {
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+      investmentType: 'mutual_funds',
+      capital: Number(req.body.capital),
+      notes: req.body.notes || '',
+      approved: false,
+      createdAt: new Date()
+    };
 
-    // Save the updated agent
-    await agent.save();
+    console.log('4. New lead object:', newLead);
 
-    res.json({ message: 'Lead submitted successfully.', agent });
-  } catch (err) {
-    res.status(500).json({ error: 'An error occurred while submitting the lead.' });
+    // Initialize clients array if it doesn't exist
+    if (!agent.clients) {
+      agent.clients = [];
+      console.log('5. Initialized empty clients array');
+    }
+
+    // Add the new lead
+    agent.clients.push(newLead);
+    console.log('6. Added lead to clients array');
+
+    // Save with error handling
+    try {
+      const savedAgent = await agent.save();
+      console.log('7. Successfully saved agent');
+
+      return res.json({
+        success: true,
+        message: 'Lead submitted successfully',
+        data: {
+          totalClients: savedAgent.clients.length,
+          totalInvestments: savedAgent.clients.reduce((sum, client) => sum + (client.capital || 0), 0),
+          monthlyCommission: savedAgent.monthlyPayout || 0,
+          recentActivities: [{
+            date: newLead.createdAt,
+            description: `New lead: ${newLead.name}`
+          }],
+          clients: savedAgent.clients
+        }
+      });
+    } catch (saveError) {
+      console.error('Save error details:', {
+        message: saveError.message,
+        errors: saveError.errors,
+        stack: saveError.stack
+      });
+      return res.status(500).json({
+        success: false,
+        message: 'Error saving lead',
+        error: saveError.message
+      });
+    }
+  } catch (error) {
+    console.error('Lead submission error details:', {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({
+      success: false,
+      message: 'Error processing lead submission',
+      error: error.message
+    });
   }
 });
 

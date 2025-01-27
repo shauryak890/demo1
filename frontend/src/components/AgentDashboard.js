@@ -1,5 +1,5 @@
 // AgentDashboard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -19,11 +19,7 @@ function AgentDashboard({ user }) {
     notes: ''
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       
@@ -31,11 +27,6 @@ function AgentDashboard({ user }) {
         toast.error('Authentication token not found');
         return;
       }
-
-      // Debug logs
-      console.log('User:', user);
-      console.log('Token:', token);
-      console.log('Agent ID:', user?.agentId);
 
       if (!user?.agentId) {
         toast.error('Agent ID not found. Please log out and log in again.');
@@ -51,16 +42,18 @@ function AgentDashboard({ user }) {
         }
       );
 
-      console.log('Dashboard Response:', response.data);
       setDashboardData(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Dashboard fetch error:', error);
-      toast.error(error.response?.data?.message || 'Failed to load dashboard data');
       setError(error.response?.data?.message || 'Failed to load dashboard data');
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const handleSubmitLead = async (e) => {
     e.preventDefault();
@@ -71,8 +64,13 @@ function AgentDashboard({ user }) {
         return;
       }
 
+      console.log('Submitting lead:', {
+        agentId: user.agentId,
+        leadData: newLead
+      });
+
       const response = await axios.post(
-        `http://localhost:5000/agent/${user.agentId}/submit-lead`,
+        `http://localhost:5000/agent/${user.agentId}/leads`,
         newLead,
         {
           headers: { 
@@ -81,19 +79,27 @@ function AgentDashboard({ user }) {
         }
       );
 
-      setDashboardData(response.data);
-      setNewLead({
-        name: '',
-        email: '',
-        phone: '',
-        investmentType: 'mutual_funds',
-        capital: '',
-        notes: ''
-      });
-      toast.success('Lead submitted successfully');
+      console.log('Server response:', response.data);
+
+      if (response.data.success) {
+        toast.success('Lead submitted successfully');
+        setNewLead({
+          name: '',
+          email: '',
+          phone: '',
+          investmentType: 'mutual_funds',
+          capital: '',
+          notes: ''
+        });
+        await fetchDashboardData();
+      }
     } catch (err) {
-      console.error('Lead submission error:', err);
-      toast.error('Failed to submit lead. Please try again.');
+      console.error('Lead submission error:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      toast.error(err.response?.data?.message || 'Failed to submit lead. Please try again.');
     }
   };
 
