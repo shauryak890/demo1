@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './Auth.css';
 
@@ -114,7 +114,8 @@ function Login({ setUser }) {
         </form>
 
         <p className="auth-link">
-          Don't have an account?<a href="/register">Register</a>
+          Don't have an account?
+          <Link to="/register" className="auth-link-button">Register</Link>
         </p>
       </div>
     </div>

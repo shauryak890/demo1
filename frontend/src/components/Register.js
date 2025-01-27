@@ -248,7 +248,8 @@ function Register() {
         </form>
 
         <p className="auth-link">
-          Already have an account?<a href="/login">Login</a>
+          Already have an account?
+          <Link to="/login" className="auth-link-button">Login</Link>
         </p>
       </div>
     </div>

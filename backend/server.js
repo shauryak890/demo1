@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const path = require('path');
 
 // Validate essential environment variables
 if (!process.env.MONGO_URI) {
@@ -82,23 +83,26 @@ app.get('/auth/register', (req, res) => {
 app.use('/agent', agentRoutes);
 app.use('/admin', adminRoutes);
 
-// 404 handler with detailed logging
-app.use((req, res) => {
-  const error = {
-    path: req.path,
-    method: req.method,
-    headers: req.headers,
-    body: req.body,
-    timestamp: new Date().toISOString()
-  };
-  
-  console.error('404 Error:', error);
-  
-  res.status(404).json({
-    success: false,
-    error: 'Endpoint not found',
-    details: error
+// Add this after your API routes but before error handlers
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the React frontend app
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
   });
+}
+
+// Your 404 handler should come after this
+app.use((req, res) => {
+  // Only handle API routes with 404
+  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) {
+    res.status(404).json({
+      success: false,
+      error: 'API endpoint not found'
+    });
+  }
 });
 
 // Route to fetch all agents' data for the admin panel

@@ -178,4 +178,17 @@
   .submit-button {
     padding: 0.75rem;
   }
+}
+
+.auth-link-button {
+  color: #4299e1;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.auth-link-button:hover {
+  text-decoration: underline;
+  color: #3182ce;
 } 

@@ -92,7 +92,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Router>
+      <Router basename="/">
         <div className="app">
           <ToastContainer position="top-right" />
           <Navbar user={user} handleLogout={handleLogout} toggleTheme={toggleTheme} />
