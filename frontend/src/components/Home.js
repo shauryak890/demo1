@@ -11,7 +11,11 @@ import {
   Target,
   HandshakeIcon,
   Coins,
-  ArrowRight
+  ArrowRight,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Instagram
 } from 'lucide-react';
 
 const Home = ({ user }) => {
@@ -158,6 +162,40 @@ const Home = ({ user }) => {
           </div>
         </div>
       )}
+
+      {/* Footer Section */}
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3>Contact Us</h3>
+            <p>Email: support@budgetbrilliance.com</p>
+            <p>Phone: +91 1800-123-4567</p>
+            <p>Address: Financial District, Mumbai</p>
+          </div>
+
+          <div className="footer-section">
+            <h3>Quick Links</h3>
+            <ul>
+              <li><Link to="/about">About Us</Link></li>
+              <li><Link to="/contact">Contact</Link></li>
+              <li><Link to="/privacy">Privacy Policy</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-section">
+            <h3>Follow Us</h3>
+            <div className="social-links">
+              <a href="#" aria-label="Facebook"><Facebook size={20} /></a>
+              <a href="#" aria-label="Twitter"><Twitter size={20} /></a>
+              <a href="#" aria-label="LinkedIn"><Linkedin size={20} /></a>
+              <a href="#" aria-label="Instagram"><Instagram size={20} /></a>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2024 Budget Brilliance. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };

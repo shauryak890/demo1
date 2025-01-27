@@ -15,6 +15,7 @@ import OurFunds from './components/OurFunds';
 import AboutUs from './components/AboutUs';
 import Contact from './components/Contact';
 import Home from './components/Home';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import './index.css';
 
 function App() {
@@ -119,8 +120,9 @@ function App() {
 
         {/* Other routes */}
         <Route path="/our-funds" element={<OurFunds />} />
-        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
       <Footer />

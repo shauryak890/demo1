@@ -12,7 +12,8 @@ import {
   Sun,
   LayoutDashboard,
   PiggyBank,
-  Settings
+  Settings,
+  Wallet
 } from 'lucide-react';
 
 function Navbar({ user, handleLogout, toggleTheme }) {
@@ -30,44 +31,15 @@ function Navbar({ user, handleLogout, toggleTheme }) {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          <PiggyBank size={24} />
+          <Wallet size={24} />
           <span>Budget Brilliance</span>
         </Link>
 
         <div className="nav-links">
-          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-            <Home size={18} />
-            <span>Home</span>
-          </Link>
-
-          <Link to="/our-funds" className={`nav-link ${location.pathname === '/our-funds' ? 'active' : ''}`}>
-            <BarChart3 size={18} />
-            <span>Our Funds</span>
-          </Link>
-
-          {user?.role === 'agent' && (
-            <Link to="/agentdashboard" className={`nav-link ${location.pathname === '/agentdashboard' ? 'active' : ''}`}>
-              <LayoutDashboard size={18} />
-              <span>Dashboard</span>
-            </Link>
-          )}
-
-          {user?.role === 'admin' && (
-            <Link to="/admin" className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}>
-              <Settings size={18} />
-              <span>Admin Panel</span>
-            </Link>
-          )}
-
-          <Link to="/about-us" className={`nav-link ${location.pathname === '/about-us' ? 'active' : ''}`}>
-            <Info size={18} />
-            <span>About Us</span>
-          </Link>
-
-          <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>
-            <Phone size={18} />
-            <span>Contact</span>
-          </Link>
+          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/about" className="nav-link">About Us</Link>
+          <Link to="/contact" className="nav-link">Contact</Link>
+          <Link to="/privacy" className="nav-link">Privacy</Link>
         </div>
 
         <div className="nav-actions">

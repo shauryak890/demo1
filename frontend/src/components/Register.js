@@ -22,6 +22,42 @@ function Register() {
   console.log('Form Data:', formData); // Debug: Log the form data
 
   const [error, setError] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+
+  const termsContent = {
+    sections: [
+      {
+        title: "1. Account Terms & Conditions",
+        content: [
+          "By creating an account, you agree to comply with these terms and conditions.",
+          "You must be at least 18 years old to use our services.",
+          "You must provide accurate and complete information during registration.",
+          "You are responsible for maintaining the security of your account credentials.",
+          "You agree to notify us immediately of any unauthorized access to your account."
+        ]
+      },
+      {
+        title: "2. Investment Terms",
+        content: [
+          "All investments carry inherent risks, and past performance is not indicative of future results.",
+          "You acknowledge that you understand the risks associated with investments.",
+          "Minimum investment amounts may apply to certain investment products.",
+          "Investment decisions are made at your own discretion.",
+          "We do not guarantee any returns on investments."
+        ]
+      },
+      {
+        title: "3. Privacy & Data Protection",
+        content: [
+          "We collect and process your personal information in accordance with our Privacy Policy.",
+          "Your data is protected using industry-standard security measures.",
+          "We may share your information with regulatory authorities when required by law.",
+          "You have the right to access and update your personal information."
+        ]
+      }
+    ]
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,6 +185,57 @@ function Register() {
               value="agent" // Force the role to be "agent" for distributor registration
             />
           )}
+          <div className="terms-section">
+            <div className="terms-header">
+              <label className="checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  required
+                />
+                <span className="checkbox-label">
+                  I accept the terms and conditions
+                </span>
+              </label>
+              <button
+                type="button"
+                className="terms-toggle"
+                onClick={() => setShowTerms(!showTerms)}
+              >
+                {showTerms ? 'Hide Terms' : 'View Terms'}
+              </button>
+            </div>
+
+            {showTerms && (
+              <div className="terms-modal">
+                <div className="terms-modal-content">
+                  <div className="terms-modal-header">
+                    <h3>Terms and Conditions</h3>
+                    <button
+                      type="button"
+                      className="close-button"
+                      onClick={() => setShowTerms(false)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="terms-modal-body">
+                    {termsContent.sections.map((section, index) => (
+                      <div key={index} className="terms-section-content">
+                        <h4>{section.title}</h4>
+                        <ul>
+                          {section.content.map((item, itemIndex) => (
+                            <li key={itemIndex}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           <button type="submit" className="button">Register</button>
         </form>
         <p className="linkText">
