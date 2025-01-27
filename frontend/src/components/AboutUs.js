@@ -10,7 +10,11 @@ import {
   Globe,
   Gem,
   Heart,
-  Lightbulb
+  Lightbulb,
+  Headphones,
+  Trophy,
+  Briefcase,
+  LineChart
 } from 'lucide-react';
 
 const AboutUs = () => {
@@ -81,29 +85,31 @@ const AboutUs = () => {
         </div>
       </section>
 
-      <section className="team-section">
+      <section className="leadership-section">
         <h2>Leadership & Expertise</h2>
-        <div className="team-grid">
-          <div className="team-member">
-            <div className="member-icon">
-              <Users size={32} />
+        <div className="leadership-grid">
+          <div className="leadership-card">
+            <div className="leadership-icon">
+              <Briefcase size={32} />
             </div>
             <h3>Executive Leadership</h3>
             <p>Seasoned financial experts with decades of combined experience</p>
           </div>
-          <div className="team-member">
-            <div className="member-icon">
-              <Target size={32} />
+
+          <div className="leadership-card">
+            <div className="leadership-icon">
+              <LineChart size={32} />
             </div>
             <h3>Investment Team</h3>
-            <p>Expert analysts and portfolio managers</p>
+            <p>Expert analysts and portfolio managers dedicated to maximizing returns</p>
           </div>
-          <div className="team-member">
-            <div className="member-icon">
-              <Award size={32} />
+
+          <div className="leadership-card">
+            <div className="leadership-icon">
+              <Headphones size={32} />
             </div>
             <h3>Support Team</h3>
-            <p>Dedicated customer success professionals</p>
+            <p>Dedicated customer success professionals available 24/7</p>
           </div>
         </div>
       </section>

@@ -17,6 +17,7 @@ import Contact from './components/Contact';
 import Home from './components/Home';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import './index.css';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -33,7 +34,12 @@ function App() {
     if (token) {
       try {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        setUser({ id: decodedToken.id, role: decodedToken.role, agentId: decodedToken.agentId });
+        console.log('Decoded token:', decodedToken);
+        setUser({ 
+          id: decodedToken.id, 
+          role: decodedToken.role, 
+          agentId: decodedToken.agentId 
+        });
       } catch (error) {
         console.error('Error decoding token:', error);
         localStorage.removeItem('token'); // Clear invalid token
@@ -79,64 +85,66 @@ function App() {
     }
     
     // Otherwise show home page
-    return <Home />;
+    return <Home user={user} />;
   };
 
   return (
-    <Router>
-      <div className="app">
-        <ToastContainer position="top-right" />
-        <Navbar user={user} handleLogout={handleLogout} toggleTheme={toggleTheme} />
-        
-        <main className="main-content">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<HomeRoute />} />
-            <Route path="/login" element={
-              user ? (
-                <Navigate 
-                  to="/" 
-                  state={{ from: '/login' }} // Add state to track where we came from
-                />
-              ) : (
-                <Login setUser={setUser} />
-              )
-            } />
-            <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
-            <Route path="/register/distributor" element={user ? <Navigate to="/" /> : <Register />} />
-
-            {/* Protected routes */}
-            <Route
-              path="/agent-dashboard"
-              element={
-                user?.role === 'agent' ? (
-                  <AgentDashboard user={user} />
+    <ThemeProvider>
+      <Router>
+        <div className="app">
+          <ToastContainer position="top-right" />
+          <Navbar user={user} handleLogout={handleLogout} toggleTheme={toggleTheme} />
+          
+          <main className="main-content">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<HomeRoute />} />
+              <Route path="/login" element={
+                user ? (
+                  <Navigate 
+                    to="/" 
+                    state={{ from: '/login' }} // Add state to track where we came from
+                  />
                 ) : (
-                  <Navigate to="/login" />
+                  <Login setUser={setUser} />
                 )
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                user?.role === 'admin' ? (
-                  <AdminPanel />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
-            />
+              } />
+              <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+              <Route path="/register/distributor" element={user ? <Navigate to="/" /> : <Register />} />
 
-            {/* Other routes */}
-            <Route path="/our-funds" element={<OurFunds />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+              {/* Protected routes */}
+              <Route
+                path="/agentdashboard"
+                element={
+                  user?.role === 'agent' ? (
+                    <AgentDashboard user={user} />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  user?.role === 'admin' ? (
+                    <AdminPanel />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+
+              {/* Other routes */}
+              <Route path="/our-funds" element={<OurFunds />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 

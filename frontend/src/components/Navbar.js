@@ -13,19 +13,14 @@ import {
   LayoutDashboard,
   PiggyBank,
   Settings,
-  Wallet
+  Wallet,
+  User
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
-function Navbar({ user, handleLogout, toggleTheme }) {
+function Navbar({ user, handleLogout }) {
   const location = useLocation();
-  const [isDark, setIsDark] = React.useState(
-    localStorage.getItem('theme') === 'dark'
-  );
-
-  const handleThemeToggle = () => {
-    setIsDark(!isDark);
-    toggleTheme();
-  };
+  const { darkMode, toggleDarkMode } = useTheme();
 
   return (
     <nav className="navbar">
@@ -36,21 +31,60 @@ function Navbar({ user, handleLogout, toggleTheme }) {
         </Link>
 
         <div className="nav-links">
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/about" className="nav-link">About Us</Link>
-          <Link to="/contact" className="nav-link">Contact</Link>
-          <Link to="/privacy" className="nav-link">Privacy</Link>
+          <Link to="/" className="nav-link">
+            <Home size={18} />
+            Home
+          </Link>
+          {user?.role === 'agent' && (
+            <Link to="/agentdashboard" className="nav-link">
+              <LayoutDashboard size={18} />
+              Dashboard
+            </Link>
+          )}
+          {user?.role === 'admin' && (
+            <Link to="/admin" className="nav-link">
+              <Settings size={18} />
+              Admin Panel
+            </Link>
+          )}
+          <Link to="/about" className="nav-link">
+            <Info size={18} />
+            About Us
+          </Link>
+          <Link to="/contact" className="nav-link">
+            <Phone size={18} />
+            Contact
+          </Link>
         </div>
 
         <div className="nav-actions">
-          <button className="theme-toggle" onClick={handleThemeToggle}>
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          <button 
+            onClick={toggleDarkMode}
+            className="theme-toggle-btn"
+            aria-label="Toggle theme"
+          >
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           {user ? (
             <div className="user-actions">
-              <span className="user-role">
-                {user.role === 'admin' ? 'Admin' : user.role === 'agent' ? 'Agent' : 'User'}
+              <span className={`user-role ${user.role}`}>
+                {user.role === 'admin' ? (
+                  <>
+                    <Settings size={16} />
+                    Admin
+                  </>
+                ) : user.role === 'agent' ? (
+                  <>
+                    <LayoutDashboard size={16} />
+                    Agent
+                  </>
+                ) : (
+                  <>
+                    <User size={16} />
+                    User
+                  </>
+                )}
               </span>
               <button className="nav-button logout" onClick={handleLogout}>
                 <LogOut size={18} />

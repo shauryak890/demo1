@@ -16,6 +16,7 @@
   --ring: #003366; /* Dark Blue for focus rings */
   --radius: 0.5rem; /* Border radius */
   --card: #ffffff; /* White for card backgrounds */
+  --text: #000000;
 }
 
 .dark {
@@ -35,6 +36,7 @@
   --input: #1e293b; /* Darker Blue for input fields */
   --ring: #2563eb; /* Blue for focus rings */
   --card: #1e293b; /* Darker Blue for card backgrounds */
+  --text: #ffffff;
 }
 
 * {
@@ -46,7 +48,7 @@
 body {
   font-family: 'Inter', sans-serif; /* Use Inter font */
   background-color: var(--background);
-  color: var(--foreground);
+  color: var(--text);
   line-height: 1.5;
 }
 
@@ -89,7 +91,7 @@ header h1 {
 /* Navbar styles */
 .navbar {
   background-color: var(--background);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--text);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -156,7 +158,7 @@ header h1 {
 }
 
 .nav-link:hover svg {
-  transform: scale(1.1);
+  transform: translateY(-1px);
 }
 
 .nav-actions {
@@ -1734,6 +1736,108 @@ header h1 {
   margin-bottom: 1rem;
 }
 
+/* Leadership Section Styles */
+.leadership-section {
+  padding: 4rem 2rem;
+  background-color: var(--card);
+  border-radius: var(--radius);
+  margin-top: 4rem;
+}
+
+.leadership-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  color: var(--foreground);
+}
+
+.leadership-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.leadership-card {
+  background-color: var(--background);
+  padding: 2rem;
+  border-radius: var(--radius);
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+.leadership-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.leadership-icon {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.leadership-card:hover .leadership-icon {
+  transform: scale(1.1);
+  border-radius: 50%;
+}
+
+.leadership-card h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.leadership-card p {
+  color: var(--muted-foreground);
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .leadership-section {
+    padding: 3rem 1rem;
+  }
+
+  .leadership-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .leadership-grid {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+  }
+
+  .leadership-card {
+    padding: 1.5rem;
+  }
+
+  .leadership-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .leadership-card h3 {
+    font-size: 1.25rem;
+  }
+
+  .leadership-card p {
+    font-size: 1rem;
+  }
+}
+
 /* Contact Page Styles */
 .contact-container {
   max-width: 1200px;
@@ -1884,4 +1988,58 @@ header h1 {
   .faq-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Add styles for the theme toggle button */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.theme-toggle-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+/* Update user role badge styles */
+.user-role {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.user-role.agent {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.user-role.admin {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+/* Update nav-link styles */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link svg {
+  transition: transform 0.2s ease;
+}
+
+.nav-link:hover svg {
+  transform: translateY(-1px);
 }
