@@ -22,10 +22,12 @@ function StockData() {
   const [error, setError] = useState('');
   const [conversionRate, setConversionRate] = useState(82.5); // Default conversion rate
 
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+
   // Fetch daily conversion rate from an API
   const fetchConversionRate = async () => {
     try {
-      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+      const response = await axios.get(`${apiBaseUrl}/exchangerate`);
       const rate = response.data.rates.INR;
       setConversionRate(rate);
     } catch (err) {
@@ -40,7 +42,7 @@ function StockData() {
   // Fetch stock data from the backend
   const fetchData = async (stockSymbol) => {
     try {
-      const response = await axios.get(`http://localhost:5000/stock/${stockSymbol}`);
+      const response = await axios.get(`${apiBaseUrl}/stock/${stockSymbol}`);
       const stockData = response.data;
 
       // Convert price to INR using the fetched conversion rate

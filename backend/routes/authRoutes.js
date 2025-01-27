@@ -10,111 +10,166 @@ const auth = require('../middleware/auth'); // Add this line to import auth midd
 // Login route
 router.post('/login', async (req, res) => {
   try {
+    console.log('Login request received:', {
+      body: req.body,
+      headers: req.headers
+    });
+
     const { email, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Input validation
+    if (!email || typeof email !== 'string') {
+      console.log('Invalid email provided');
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+
+    if (!password || typeof password !== 'string') {
+      console.log('Invalid password provided');
+      return res.status(400).json({ error: 'Valid password is required' });
+    }
+
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    console.log('User lookup result:', user ? 'Found' : 'Not found');
+
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+    // Verify password
+    try {
+      const isMatch = await bcrypt.compare(password, user.password);
+      console.log('Password verification:', isMatch ? 'Success' : 'Failed');
+
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Invalid credentials' });
+      }
+    } catch (bcryptError) {
+      console.error('Password comparison error:', bcryptError);
+      return res.status(500).json({ error: 'Error verifying credentials' });
     }
 
-    // If user is an agent, get the agent details
+    // Get agent data if applicable
     let agentData = null;
     if (user.role === 'agent') {
       agentData = await Agent.findOne({ userId: user._id });
-      if (!agentData) {
-        return res.status(500).json({ error: 'Agent data not found' });
-      }
+      console.log('Agent data:', agentData ? 'Found' : 'Not found');
     }
 
-    // Create token payload
-    const payload = {
+    // Create token
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+        email: user.email,
+        agentId: agentData?._id
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Prepare response
+    const response = {
+      token,
       id: user._id,
       role: user.role,
       email: user.email,
       agentId: agentData?._id
     };
 
-    // Sign token
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    console.log('Sending successful response');
+    return res.status(200).json(response);
 
-    // Send response
-    res.json({
-      token,
-      id: user._id,
-      role: user.role,
-      email: user.email,
-      agentId: agentData?._id
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ 
+      error: 'An error occurred during login. Please try again.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
-
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Signup route
-router.post('/signup', async (req, res) => {
-  const { name, email, password, role } = req.body;
-
+// Register route
+router.post('/register', async (req, res) => {
   try {
+    console.log('Registration request received:', {
+      body: req.body,
+      headers: req.headers
+    });
+
+    const { name, email, password, role } = req.body;
+
     // Validate required fields
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: 'All fields are required.' });
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide all required fields'
+      });
     }
 
-    // Validate role
-    if (role !== 'user' && role !== 'agent') {
-      return res.status(400).json({ error: 'Invalid role.' });
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide a valid email address'
+      });
     }
 
-    // Check if the user already exists
-    const userExists = await User.findOne({ email });
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 6 characters long'
+      });
+    }
+
+    // Check if user exists
+    const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) {
-      return res.status(400).json({ error: 'User already exists.' });
+      return res.status(400).json({
+        success: false,
+        error: 'User already exists with this email'
+      });
     }
 
-    // Hash password
+    // Create user
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user
-    const newUser = new User({
+    const user = new User({
       name,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
-      role
+      role: role || 'user'
     });
 
-    // Save the user first to get the user ID
-    await newUser.save();
+    await user.save();
+    console.log('User created successfully:', user._id);
 
-    // If the user is an agent, create an agent document
+    // Create agent if role is agent
     if (role === 'agent') {
-      const newAgent = new Agent({
-        userId: newUser._id,
-        email: email,
-        name: name,
+      const agent = new Agent({
+        userId: user._id,
+        name,
+        email: email.toLowerCase(),
         role: 'agent'
       });
-
-      await newAgent.save();
+      await agent.save();
+      console.log('Agent profile created:', agent._id);
     }
 
-    res.json({ message: 'User registered successfully.' });
-  } catch (err) {
-    console.error('Error during signup:', err);
-    res.status(500).json({ error: 'An error occurred during signup.' });
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful'
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Registration failed. Please try again later.'
+    });
   }
 });
 

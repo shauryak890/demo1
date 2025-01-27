@@ -1,0 +1,19 @@
+/* Add this at the top of your Home.css file */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Update the why-choose-us section to have some padding-top for better scrolling */
+.why-choose-us {
+  padding-top: 80px; /* Adjust this value based on your navbar height */
+  margin-top: -80px; /* This prevents the section from jumping under the navbar */
+  background-color: white; /* Ensure the background is solid */
+}
+
+/* If you have a fixed navbar, add this to prevent content from hiding under it */
+.section-anchor {
+  display: block;
+  position: relative;
+  top: -80px; /* Should match your navbar height */
+  visibility: hidden;
+} 

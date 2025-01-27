@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -15,14 +15,15 @@ import {
   Facebook,
   Twitter,
   Linkedin,
-  Instagram,
-  LayoutDashboard,
-  Settings
+  Instagram
 } from 'lucide-react';
 
 const Home = ({ user }) => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const whyChooseUsRef = useRef(null);
+
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleBecomeAgent = async () => {
     try {
@@ -34,7 +35,7 @@ const Home = ({ user }) => {
       }
 
       const response = await axios.post(
-        'http://localhost:5000/auth/become-agent',
+        `${apiBaseUrl}/auth/become-agent`,
         {},
         {
           headers: { 
@@ -45,17 +46,23 @@ const Home = ({ user }) => {
 
       if (response.data.success) {
         setShowModal(true);
-        // Clear the token to force re-login
         localStorage.removeItem('token');
         
         setTimeout(() => {
           setShowModal(false);
-          navigate('/login'); // Redirect to login instead of reload
+          navigate('/login');
         }, 3000);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to become an agent');
     }
+  };
+
+  const scrollToWhyChooseUs = () => {
+    whyChooseUsRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
   };
 
   return (
@@ -72,15 +79,15 @@ const Home = ({ user }) => {
             <Link to="/register" className="btn btn-primary btn-large">
               Get Started
             </Link>
-            <Link to="/our-funds" className="btn btn-secondary btn-large">
+            <button onClick={scrollToWhyChooseUs} className="btn btn-secondary btn-large">
               Learn More
-            </Link>
+            </button>
           </div>
         </div>
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="why-choose-us">
+      <section ref={whyChooseUsRef} className="why-choose-us">
         <h2>Why Choose Us</h2>
         <div className="features-grid">
           <div className="feature-card">
@@ -180,10 +187,18 @@ const Home = ({ user }) => {
           <div className="footer-section">
             <h3>Follow Us</h3>
             <div className="social-links">
-              <a href="#" aria-label="Facebook"><Facebook size={20} /></a>
-              <a href="#" aria-label="Twitter"><Twitter size={20} /></a>
-              <a href="#" aria-label="LinkedIn"><Linkedin size={20} /></a>
-              <a href="#" aria-label="Instagram"><Instagram size={20} /></a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <Facebook size={20} />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                <Twitter size={20} />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <Linkedin size={20} />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <Instagram size={20} />
+              </a>
             </div>
           </div>
         </div>

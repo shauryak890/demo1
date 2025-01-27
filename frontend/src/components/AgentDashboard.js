@@ -1,4 +1,3 @@
-// AgentDashboard.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -19,6 +18,8 @@ function AgentDashboard({ user }) {
     notes: ''
   });
 
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+
   const fetchDashboardData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
@@ -34,7 +35,7 @@ function AgentDashboard({ user }) {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/agent/${user.agentId}/dashboard`,
+        `${apiBaseUrl}/agent/${user.agentId}/dashboard`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -49,7 +50,7 @@ function AgentDashboard({ user }) {
       setError(error.response?.data?.message || 'Failed to load dashboard data');
       setLoading(false);
     }
-  }, [user]);
+  }, [apiBaseUrl, user]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -64,13 +65,8 @@ function AgentDashboard({ user }) {
         return;
       }
 
-      console.log('Submitting lead:', {
-        agentId: user.agentId,
-        leadData: newLead
-      });
-
       const response = await axios.post(
-        `http://localhost:5000/agent/${user.agentId}/leads`,
+        `${apiBaseUrl}/agent/${user.agentId}/leads`,
         newLead,
         {
           headers: { 
@@ -78,8 +74,6 @@ function AgentDashboard({ user }) {
           }
         }
       );
-
-      console.log('Server response:', response.data);
 
       if (response.data.success) {
         toast.success('Lead submitted successfully');

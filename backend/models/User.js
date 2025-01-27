@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,26 +17,33 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    required: true, // Ensure role is required
-    enum: ['user', 'agent', 'admin'], // Define valid roles
+    required: true,
+    enum: ['user', 'agent', 'admin'],
+    default: 'user'
   },
   agentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Agent', // Reference to the Agent model
+    ref: 'Agent',
   },
 });
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
+// Remove the pre-save hook since we're handling password hashing in the route
+userSchema.pre('save', function(next) {
   next();
 });
 
-// Method to compare passwords
-userSchema.methods.comparePassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
+// Update the compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  try {
+    if (!this.password) {
+      throw new Error('No password set for this user');
+    }
+    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    return isMatch;
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    throw error;
+  }
 };
 
 const User = mongoose.model('User', userSchema);

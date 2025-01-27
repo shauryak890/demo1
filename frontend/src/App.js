@@ -18,10 +18,12 @@ import Home from './components/Home';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import './index.css';
 import { ThemeProvider } from './context/ThemeContext';
+import axios from 'axios';
 
 function App() {
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -115,23 +117,19 @@ function App() {
               {/* Protected routes */}
               <Route
                 path="/agentdashboard"
-                element={
-                  user?.role === 'agent' ? (
-                    <AgentDashboard user={user} />
-                  ) : (
-                    <Navigate to="/login" />
-                  )
-                }
+                element={user?.role === 'agent' ? (
+                  <AgentDashboard user={user} />
+                ) : (
+                  <Navigate to="/login" />
+                )}
               />
               <Route
                 path="/admin"
-                element={
-                  user?.role === 'admin' ? (
-                    <AdminPanel />
-                  ) : (
-                    <Navigate to="/login" />
-                  )
-                }
+                element={user?.role === 'admin' ? (
+                  <AdminPanel />
+                ) : (
+                  <Navigate to="/login" />
+                )}
               />
 
               {/* Other routes */}

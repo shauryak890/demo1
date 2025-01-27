@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import './Auth.css';
 
 function Register() {
   const location = useLocation();
@@ -59,29 +60,91 @@ function Register() {
     ]
   };
 
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!acceptTerms) {
+      toast.error('Please accept the terms and conditions');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/signup', formData);
-      console.log('Signup successful:', response.data);
-      setError('');
-      toast.success('Registration successful! Please login.');
-      
-      // Redirect to login page after a short delay
-      setTimeout(() => {
-        navigate('/login');
-      }, 1000);
+      // First verify the API is accessible
+      const baseUrl = process.env.REACT_APP_API_BASE_URL;
+      console.log('Base URL:', baseUrl);
 
-    } catch (err) {
-      console.error('Signup error:', err.response?.data || err.message);
-      setError(err.response?.data?.error || 'An error occurred during signup.');
-      toast.error(err.response?.data?.message || 'Registration failed');
+      try {
+        const healthCheck = await axios.get(baseUrl);
+        console.log('API Health Check:', healthCheck.data);
+      } catch (healthError) {
+        console.error('API Health Check Failed:', healthError);
+        throw new Error('API is not accessible');
+      }
+
+      const apiUrl = `${baseUrl}/auth/register`;
+      console.log('Registration URL:', apiUrl);
+
+      const registerData = {
+        name: formData.name,
+        email: formData.email.trim(),
+        password: formData.password,
+        role: isDistributor ? 'agent' : 'user'
+      };
+
+      console.log('Registration Data:', registerData);
+
+      const response = await axios({
+        method: 'POST',
+        url: apiUrl,
+        data: registerData,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      });
+
+      console.log('Registration Response:', response.data);
+
+      if (response.data.success) {
+        toast.success('Registration successful! Please login.');
+        navigate('/login');
+      } else {
+        throw new Error(response.data.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration Error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      });
+
+      let errorMessage;
+      if (error.message === 'API is not accessible') {
+        errorMessage = 'Service is currently unavailable. Please try again later.';
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (!navigator.onLine) {
+        errorMessage = 'No internet connection. Please check your network.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Registration service is currently unavailable.';
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else {
+        errorMessage = 'Registration failed. Please try again later.';
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -93,153 +156,99 @@ function Register() {
   };
 
   return (
-    <div className="container">
-      <div className="formWrapper">
-        <h2 className="title">Register {isDistributor ? 'as Distributor' : ''}</h2>
+    <div className="auth-container">
+      <div className="auth-wrapper">
+        <h2 className="auth-title">Register {isDistributor ? 'as Distributor' : ''}</h2>
 
         {isDistributor && (
-          <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '5px', marginBottom: '20px' }}>
+          <div className="distributor-info">
             <h2>Why Join as a Distributor?</h2>
             <ul>
-              <li>Work from home and earn money.</li>
-              <li>Flexible working hours.</li>
-              <li>Access to exclusive training and resources.</li>
-              <li>Be part of a growing community.</li>
+              <li>Work from home and earn money</li>
+              <li>Flexible working hours</li>
+              <li>Access to exclusive training and resources</li>
+              <li>Be part of a growing community</li>
             </ul>
           </div>
         )}
 
-        {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
-        <form className="form" onSubmit={handleSubmit}>
-          <div className="inputGroup">
-            <label className="label" htmlFor="name">Name</label>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label className="input-label" htmlFor="name">Name</label>
             <input
               type="text"
               id="name"
-              className="input"
+              className="input-field"
               placeholder="Enter your name"
+              name="name"
               value={formData.name}
               onChange={handleChange}
-              name="name"
               required
             />
           </div>
-          <div className="inputGroup">
-            <label className="label" htmlFor="email">Email</label>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
-              className="input"
+              className="input-field"
               placeholder="Enter your email"
+              name="email"
               value={formData.email}
               onChange={handleChange}
-              name="email"
               required
             />
           </div>
-          <div className="inputGroup">
-            <label className="label" htmlFor="password">Password</label>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
-              className="input"
+              className="input-field"
               placeholder="Enter your password"
+              name="password"
               value={formData.password}
               onChange={handleChange}
-              name="password"
               required
             />
           </div>
-          <div className="inputGroup">
-            <label className="label" htmlFor="confirmPassword">Confirm Password</label>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="confirmPassword">Confirm Password</label>
             <input
               type="password"
               id="confirmPassword"
-              className="input"
-              placeholder="Enter your password again"
+              className="input-field"
+              placeholder="Confirm your password"
+              name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              name="confirmPassword"
               required
             />
           </div>
-          {!isDistributor && (
-            <div className="inputGroup">
-              <label className="label" htmlFor="role">Role</label>
-              <select
-                id="role"
-                className="input"
-                value={formData.role}
-                onChange={handleChange}
-                name="role"
-              >
-                <option value="user">User</option>
-              </select>
-            </div>
-          )}
-          {isDistributor && (
-            <input
-              type="hidden"
-              name="role"
-              value="agent" // Force the role to be "agent" for distributor registration
-            />
-          )}
-          <div className="terms-section">
-            <div className="terms-header">
-              <label className="checkbox-wrapper">
-                <input
-                  type="checkbox"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  required
-                />
-                <span className="checkbox-label">
-                  I accept the terms and conditions
-                </span>
-              </label>
-              <button
-                type="button"
-                className="terms-toggle"
-                onClick={() => setShowTerms(!showTerms)}
-              >
-                {showTerms ? 'Hide Terms' : 'View Terms'}
-              </button>
-            </div>
 
-            {showTerms && (
-              <div className="terms-modal">
-                <div className="terms-modal-content">
-                  <div className="terms-modal-header">
-                    <h3>Terms and Conditions</h3>
-                    <button
-                      type="button"
-                      className="close-button"
-                      onClick={() => setShowTerms(false)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div className="terms-modal-body">
-                    {termsContent.sections.map((section, index) => (
-                      <div key={index} className="terms-section-content">
-                        <h4>{section.title}</h4>
-                        <ul>
-                          {section.content.map((item, itemIndex) => (
-                            <li key={itemIndex}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+          <div className="terms-group">
+            <input
+              type="checkbox"
+              id="terms"
+              className="terms-checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+            />
+            <label className="terms-label" htmlFor="terms">
+              I accept the terms and conditions
+            </label>
           </div>
-          <button type="submit" className="button">Register</button>
+
+          <button type="submit" className="submit-button">Register</button>
         </form>
-        <p className="linkText">
-          Already have an account? <Link to="/login" className="link">Login</Link>
+
+        <p className="auth-link">
+          Already have an account?<a href="/login">Login</a>
         </p>
       </div>
     </div>
